@@ -363,7 +363,7 @@ fi
 
 cd llvm-project/llvm
 
-PROJECTS="clang;lld"
+PROJECTS="clang;lld;polly"
 if [ -n "$LLDB" ]; then
     PROJECTS="$PROJECTS;lldb"
 fi
@@ -391,11 +391,13 @@ if [ -n "$MACOS_NATIVE_TOOLS" ]; then
     ln -sf llvm-lipo $PREFIX/bin/lipo
     exit 0
 fi
-
+LTO=("-DLLVM_ENABLE_LTO=thin" "-DLLVM_PARALLEL_LINK_JOBS=8")
 [ -n "$NO_RECONF" ] || rm -rf CMake*
 cmake \
     ${CMAKE_GENERATOR+-G} "$CMAKE_GENERATOR" \
     -DCMAKE_INSTALL_PREFIX="$PREFIX" \
+    -DCMAKE_C_FLAGS="-O3 -march=znver2" \
+    -DCMAKE_CXX_FLAGS="-O3 -march=znver2" \
     -DCMAKE_BUILD_TYPE=Release \
     -DLLVM_ENABLE_ASSERTIONS=$ASSERTS \
     -DLLVM_ENABLE_PROJECTS="$PROJECTS" \
@@ -409,6 +411,7 @@ cmake \
     ${LLVM_PROFILE_DATA_DIR+-DLLVM_PROFILE_DATA_DIR=$LLVM_PROFILE_DATA_DIR} \
     ${LLVM_PROFDATA_FILE+-DLLVM_PROFDATA_FILE=$LLVM_PROFDATA_FILE} \
     $CMAKEFLAGS \
+    "${LTO[@]}" \
     ..
 
 if [ "$INSTRUMENTED" != "OFF" ]; then
