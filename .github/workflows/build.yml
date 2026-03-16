@@ -1,4 +1,9 @@
 name: Builds
+
+env:
+  CFLAGS: "-O3 -march=znver2"
+  CXXFLAGS: "-O3 -march=znver2"
+  
 on:
   push:
     branches:
